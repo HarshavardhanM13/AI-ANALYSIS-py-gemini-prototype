@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reverse Learning Mode</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans text-gray-900">
+    <div class="container mx-auto p-6">
+        <h2 class="text-3xl font-bold text-center text-indigo-600 mb-8">Reverse Learning Mode</h2>
+
+        <!-- Category Selection -->
+        <div id="category-selection" class="flex flex-col items-center p-8 bg-white rounded-lg shadow-lg mb-8">
+            <label for="category" class="text-xl font-semibold mb-4">Select Category: </label>
+            <select id="category" class="border border-gray-300 p-3 rounded-md mb-6 focus:ring-2 focus:ring-indigo-500">
+                <option value="CA">Computer Architecture</option>
+                <option value="DSA">Data Structures & Algorithms</option>
+                <option value="OS">Operating Systems</option>
+                <option value="DBMS">Database Management Systems</option>
+            </select>
+            <button id="start-reverse-learning" class="bg-indigo-600 text-white py-3 px-6 rounded-lg text-lg font-medium hover:bg-indigo-800 transition-all duration-300">
+                Start Reverse Learning
+            </button>
+        </div>
+
+        <!-- Reverse Learning Section -->
+        <div id="reverse-learning" style="display:none;" class="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
+            <div id="question" class="text-2xl font-semibold text-gray-900 mb-6"></div>
+            <div id="sections" class="space-y-6 mb-6"></div>
+            <div id="timer" class="text-xl font-semibold text-red-600 mb-4"></div>
+            <button id="proceedBtn" class="bg-green-600 text-white py-3 px-6 rounded-lg text-lg font-medium hover:bg-green-800 transition-all duration-300">
+                Proceed
+            </button>
+        </div>
+
+        <!-- Past Explanations Section -->
+        <div id="pastExplanations" class="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg mt-6"></div>
+    </div>
+
+    <!-- AI Feedback Modal -->
+    <div id="aiFeedbackModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg max-w-2xl">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">AI Analysis</h3>
+            <p id="aiFeedbackContent" class="text-gray-700"></p>
+            <button onclick="closeFeedbackModal()" class="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-800">
+                Finish
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestionIndex = 0;
+        let questions = [];
+        let category;
+        let allResponses = [];
+        const userId = 1; // Example user ID (replace with actual authentication logic)
+
+        document.getElementById("start-reverse-learning").onclick = async function () {
+            category = document.getElementById("category").value;
+            document.getElementById("category-selection").style.display = "none";
+            document.getElementById("reverse-learning").style.display = "block";
+            await loadQuestions();
+            displayQuestion(currentQuestionIndex);
+        };
+
+        async function loadQuestions() {
+            try {
+                const response = await fetch(`http://127.0.0.1:5000/api/get_reverse_learning_questions?category=${category}`);
+                const data = await response.json();
+                if (data.questions) {
+                    questions = data.questions;
+                }
+            } catch (error) {
+                console.error("Error loading questions", error);
+            }
+        }
+
+        function displayQuestion(index) {
+            if (index < questions.length) {
+                const question = questions[index];
+                document.getElementById("question").textContent = question.question;
+                document.getElementById("sections").innerHTML = '';
+
+                question.prompts.forEach((prompt, i) => {
+                    const sectionElement = document.createElement("div");
+                    sectionElement.classList.add("p-4", "bg-gray-100", "rounded-md");
+                    sectionElement.innerHTML = `
+                        <label class="block text-lg mb-2">${prompt}</label>
+                        <textarea class="w-full p-2 border border-gray-300 rounded-md mb-4" rows="4" id="response-${i}"></textarea>
+                    `;
+                    document.getElementById("sections").appendChild(sectionElement);
+                });
+            }
+        }
+
+        document.getElementById("proceedBtn").onclick = async function () {
+    let userExplanation = "";
+
+    // Collect all responses into a single text
+    questions[currentQuestionIndex].prompts.forEach((prompt, i) => {
+        let responseText = document.getElementById(`response-${i}`).value.trim();
+        if (responseText) {
+            userExplanation += `Prompt: ${prompt}\nResponse: ${responseText}\n\n`;
+        }
+    });
+
+    if (!userExplanation) {
+        alert("Please answer at least one section before proceeding.");
+        return;
+    }
+
+    const requestData = {
+        user_id: userId,
+        topic: category,
+        user_explanation: userExplanation
+    };
+
+    console.log("Sending request:", requestData); // Debugging
+
+    try {
+        const response = await fetch("http://127.0.0.1:5000/store_explanation", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestData)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Error from server:", errorData);
+            alert("Error: " + (errorData.error || "Something went wrong"));
+            return;
+        }
+
+        const data = await response.json();
+        document.getElementById("aiFeedbackContent").innerHTML = `<strong>AI Feedback:</strong><br>${data.ai_feedback}`;
+        document.getElementById("aiFeedbackModal").classList.remove("hidden");
+    } catch (error) {
+        console.error("Network error:", error);
+        alert("Failed to submit responses. Please try again.");
+    }
+};
+function closeFeedbackModal() {
+    document.getElementById("aiFeedbackModal").classList.add("hidden");
+}
+    </script>
+
+</body>
+</html>

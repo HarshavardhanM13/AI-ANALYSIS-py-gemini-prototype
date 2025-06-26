@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Mode</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex items-center justify-center h-screen bg-gray-100">
+    <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold text-center mb-4">Quiz Mode</h2>
+        <div id="timer" class="text-white bg-orange-500 font-bold text-sm py-1 px-3 rounded-lg text-center shadow-sm w-34 mx-auto mt-4"></div>
+        <p id="question" class="text-xl font-semibold mb-4 text-center"></p>        
+        <div id="options" class="flex flex-col space-y-2"></div>
+        <button id="submitBtn" class="w-full p-2 mt-4 bg-blue-500 text-white rounded">Submit</button>
+        <p id="result" class="mt-4 text-center font-bold"></p>
+        <button id="analysisBtn" class="w-full p-2 mt-4 bg-green-500 text-white rounded hidden">Show Analysis</button>
+        <button onclick="window.location.href='dashboard.html'" class="w-full p-2 mt-4 bg-gray-500 text-white rounded">Back to Dashboard</button>
+    </div>
+
+    <!-- Analysis Modal -->
+    <div id="analysisModal" class="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
+            <h2 class="text-2xl font-bold text-center mb-4">Quiz Analysis</h2>
+            <p id="analysisScore" class="text-lg mb-4"></p>
+            <p id="wrongAnswers" class="text-lg mb-4"></p>
+            <button id="closeModal" class="w-full p-2 mt-4 bg-red-500 text-white rounded">Close</button>
+        </div>
+    </div>
+
+    <script src="quiz.js"></script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API</title>
+</head>
+<body>
+    <h2>Register User</h2>
+    <form id="registerForm">
+        <input type="text" id="name" placeholder="Name" required><br>
+        <input type="email" id="email" placeholder="Email" required><br>
+        <input type="password" id="password" placeholder="Password" required><br>
+        <button type="submit">Register</button>
+    </form>
+
+    <h2>Login User</h2>
+    <form id="loginForm">
+        <input type="email" id="loginEmail" placeholder="Email" required><br>
+        <input type="password" id="loginPassword" placeholder="Password" required><br>
+        <button type="submit">Login</button>
+    </form>
+
+    <script>
+        document.getElementById("registerForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            fetch("http://127.0.0.1:5000/auth/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: document.getElementById("name").value,
+                    email: document.getElementById("email").value,
+                    password: document.getElementById("password").value
+                })
+            })
+            .then(response => response.json())
+            .then(data => alert(JSON.stringify(data)))
+            .catch(error => alert("Error: " + error));
+        });
+
+        document.getElementById("loginForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            fetch("http://127.0.0.1:5000/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: document.getElementById("loginEmail").value,
+                    password: document.getElementById("loginPassword").value
+                })
+            })
+            .then(response => response.json())
+            .then(data => alert(JSON.stringify(data)))
+            .catch(error => alert("Error: " + error));
+        });
+    </script>
+</body>
+</html>
