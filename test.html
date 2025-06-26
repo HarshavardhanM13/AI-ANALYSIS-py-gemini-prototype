@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>LeetCode Tags Fetch via Flask</title>
+</head>
+<body>
+  <h1>LeetCode Problem Tags Fetcher (via Flask)</h1>
+  <input id="problemInput" type="text" placeholder="Enter problem slug e.g. two-sum" />
+  <button onclick="fetchTags()">Get Tags</button>
+
+  <pre id="output"></pre>
+
+  <script>
+    async function fetchTags() {
+      const slug = document.getElementById("problemInput").value.trim();
+      const output = document.getElementById("output");
+      output.textContent = "Loading...";
+
+      if (!slug) {
+        output.textContent = "Please enter a problem slug.";
+        return;
+      }
+
+      try {
+        const response = await fetch("http://127.0.0.1:5000/leetcode-tags", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ problemSlug: slug })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          output.textContent = `Error: ${errorData.error || response.statusText}`;
+          return;
+        }
+
+        const data = await response.json();
+        output.textContent = `Title: ${data.title}\nDifficulty: ${data.difficulty}\nTags:\n${data.topicTags.map(t => t.name).join(", ")}`;
+      } catch (err) {
+        output.textContent = "Network error or server not running.";
+      }
+    }
+  </script>
+</body>
+</html>
